@@ -537,6 +537,26 @@ def main():
     mcp.settings.host = args.host
     mcp.settings.port = args.port
 
+    # Keep DNS-rebinding protection, but also allow the address actually bound
+    # (e.g. a Tailscale IP) plus extra hosts listed in MCP_ALLOWED_HOSTS.
+    if args.host not in ("127.0.0.1", "localhost", "::1"):
+        import os
+
+        from mcp.server.transport_security import TransportSecuritySettings
+
+        hosts = ["127.0.0.1:*", "localhost:*", "[::1]:*", f"{args.host}:*"]
+        hosts += [
+            h.strip()
+            for h in os.environ.get("MCP_ALLOWED_HOSTS", "").split(",")
+            if h.strip()
+        ]
+        mcp.settings.transport_security = TransportSecuritySettings(
+            enable_dns_rebinding_protection=True,
+            allowed_hosts=hosts,
+            allowed_origins=[f"http://{h}" for h in hosts]
+            + [f"https://{h}" for h in hosts],
+        )
+
     # Run the MCP server with selected transport
     if args.transport == "http":
         logger.info(f"Starting HTTP (streaming) server on {args.host}:{args.port}")
