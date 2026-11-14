@@ -1,0 +1,18 @@
+[Unit]
+Description=Research Station MCP, public instance (PIN OAuth, behind Cloudflare Tunnel)
+After=network-online.target
+
+[Service]
+User=sandbox
+WorkingDirectory=/home/sandbox/stations/research
+Environment=HOME=/home/sandbox
+Environment=PATH=/home/sandbox/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=PYTHONUNBUFFERED=1
+Environment=RESEARCH_PIN_PUBLIC_URL=https://lab-research.artsofweb.com
+Environment=MCP_ALLOWED_HOSTS=lab-research.artsofweb.com
+ExecStart=/home/sandbox/stations/research/.venv/bin/deep-research-mcp --transport http --host 127.0.0.1 --port 8081
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,23 @@
+{
+	email admin@artsofweb.com
+	acme_dns cloudflare {env.CF_API_TOKEN}
+}
+
+(tailnet) {
+	bind 100.69.92.42
+}
+
+directus.labserver.artsofweb.com {
+	import tailnet
+	reverse_proxy 100.69.92.42:8055
+}
+
+research.labserver.artsofweb.com {
+	import tailnet
+	reverse_proxy 100.69.92.42:8000
+}
+
+mcp.labserver.artsofweb.com {
+	import tailnet
+	reverse_proxy 100.69.92.42:8080
+}

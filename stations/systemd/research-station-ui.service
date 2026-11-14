@@ -9,7 +9,7 @@ WorkingDirectory=/home/sandbox/stations/research
 Environment=HOME=/home/sandbox
 Environment=PATH=/home/sandbox/.local/bin:/usr/local/bin:/usr/bin:/bin
 Environment=PYTHONUNBUFFERED=1
-ExecStart=/home/sandbox/stations/research/.venv/bin/textual serve -h 100.69.92.42 -p 8000 -u http://100.69.92.42:8000 -t "Research Station" -c "/home/sandbox/stations/research/.venv/bin/python /home/sandbox/stations/research/cli/deep-research-tui.py"
+ExecStart=/home/sandbox/stations/research/.venv/bin/textual serve -h 100.69.92.42 -p 8000 -u https://research.labserver.artsofweb.com -t "Research Station" -c "/home/sandbox/stations/research/.venv/bin/python /home/sandbox/stations/research/cli/deep-research-tui.py"
 Restart=always
 RestartSec=5
 
