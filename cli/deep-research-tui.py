@@ -379,7 +379,7 @@ class DeepResearchTUI(App):
         )
         self.query_one("#base-url", Input).value = state.config.base_url
         self.query_one("#api-style", Select).disabled = state.provider != "openai"
-        self.query_one("#base-url", Input).disabled = state.provider in {"openai-codex", "claude-code"}
+        self.query_one("#base-url", Input).disabled = state.provider in {"openai-codex", "claude-code", "codex-cli"}
         if state.backend:
             # A named backend fixes its provider, API style and credentials.
             self.query_one("#provider", Select).disabled = True
@@ -387,6 +387,7 @@ class DeepResearchTUI(App):
         self.query_one("#reasoning-effort", Select).disabled = state.provider not in {
             "openai",
             "openai-codex",
+            "codex-cli",
         }
         self.query_one("#include-analysis", Switch).value = state.include_analysis
         self.query_one("#json-output", Switch).value = state.json_output
@@ -432,6 +433,7 @@ class DeepResearchTUI(App):
                             ("OpenAI", "openai"),
                             ("OpenAI Codex Subscription", "openai-codex"),
                             ("Claude Code Subscription", "claude-code"),
+                            ("Codex CLI Subscription", "codex-cli"),
                             ("Dr Tulu", "dr-tulu"),
                             ("Gemini", "gemini"),
                             ("Tavily", "tavily"),
@@ -536,9 +538,9 @@ class DeepResearchTUI(App):
         self.query_one("#model", Input).value = defaults.model
         base_url_input = self.query_one("#base-url", Input)
         base_url_input.value = defaults.base_url
-        base_url_input.disabled = self.provider in {"openai-codex", "claude-code"}
+        base_url_input.disabled = self.provider in {"openai-codex", "claude-code", "codex-cli"}
         effort_select = self.query_one("#reasoning-effort", Select)
-        effort_select.disabled = self.provider not in {"openai", "openai-codex"}
+        effort_select.disabled = self.provider not in {"openai", "openai-codex", "codex-cli"}
         if effort_select.disabled:
             effort_select.value = "default"
 
@@ -727,7 +729,7 @@ class DeepResearchTUI(App):
                 config_path=self._startup_state.config_path, backend=backend
             )
             config.model = self.query_one("#model", Input).value or config.model
-            if config.provider not in {"openai-codex", "claude-code"}:
+            if config.provider not in {"openai-codex", "claude-code", "codex-cli"}:
                 config.base_url = (
                     self.query_one("#base-url", Input).value or config.base_url
                 )
@@ -1057,6 +1059,7 @@ def build_parser() -> argparse.ArgumentParser:
             "openai",
             "openai-codex",
             "claude-code",
+            "codex-cli",
             "dr-tulu",
             "gemini",
             "tavily",

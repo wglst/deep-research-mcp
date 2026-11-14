@@ -66,6 +66,12 @@ _PROVIDER_DEFAULTS: dict[str, tuple[str, str, tuple[str, ...], tuple[str, ...]]]
         (),
         (),
     ),
+    "codex-cli": (
+        "auto",
+        "",
+        (),
+        (),
+    ),
 }
 
 # Name of the backend described by the [research] table (and RESEARCH_* env vars).
@@ -306,7 +312,7 @@ class ResearchConfig:
             default_model = "gpt-6-luna"
         api_key: str | None
         base_url: str | None
-        if provider in {"openai-codex", "claude-code"}:
+        if provider in {"openai-codex", "claude-code", "codex-cli"}:
             api_key = None
             base_url = default_base_url or None
         else:
@@ -374,7 +380,7 @@ class ResearchConfig:
                 raise ConfigurationError(
                     f"Invalid reasoning effort '{self.reasoning_effort}'"
                 )
-            if self.provider not in {"openai", "openai-codex"}:
+            if self.provider not in {"openai", "openai-codex", "codex-cli"}:
                 raise ConfigurationError("Reasoning effort requires an OpenAI provider")
 
         if self.provider == "openai-codex" and self.base_url:

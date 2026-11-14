@@ -608,6 +608,7 @@ def build_parser() -> argparse.ArgumentParser:
             "openai",
             "openai-codex",
             "claude-code",
+            "codex-cli",
             "dr-tulu",
             "gemini",
             "tavily",
