@@ -21,3 +21,8 @@ mcp.labserver.artsofweb.com {
 	import tailnet
 	reverse_proxy 100.69.92.42:8080
 }
+
+manage.labserver.artsofweb.com {
+	import tailnet
+	reverse_proxy 127.0.0.1:9090
+}
