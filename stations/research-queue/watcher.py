@@ -21,8 +21,10 @@ def api(method, path, body=None):
 def now(): return datetime.now(timezone.utc).isoformat()
 
 def requeue_stuck():
-    stuck = api("GET", "/items/research?filter[status][_eq]=running&fields=id&limit=-1")["data"]
+    stuck = api("GET", "/items/research?filter[status][_eq]=running&fields=id,requested_by&limit=-1")["data"]
     for rec in stuck:
+        if (rec.get("requested_by") or "").startswith("mcp"):
+            continue  # an MCP call owns this record and finishes it itself
         api("PATCH", f"/items/research/{rec['id']}", {"status": "pending", "started_at": None})
         log.info(f"requeued interrupted record {rec['id']}")
 

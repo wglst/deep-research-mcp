@@ -54,6 +54,7 @@ from mcp.server.fastmcp import Context, FastMCP
 from deep_research_mcp import __version__
 from deep_research_mcp.agent import DeepResearchAgent
 from deep_research_mcp.auth import load_http_auth
+from deep_research_mcp import directus_log
 from deep_research_mcp.codex_auth import DEFAULT_CODEX_AUTH_PATH
 from deep_research_mcp.config import (
     DEFAULT_BACKEND_NAME,
@@ -275,6 +276,15 @@ async def _run_research_with_progress(
 
 
 # Define the actual async functions that will be wrapped by FastMCP
+async def _logged(record_id, result) -> dict[str, Any]:
+    """Save the outcome to Directus and return it, tagged with the record id."""
+    await directus_log.finish(record_id, result)
+    out = asdict(result)
+    if record_id is not None:
+        out["record_id"] = record_id
+    return out
+
+
 @mcp.tool(meta=RESEARCH_TOOL_META, structured_output=True)
 async def deep_research(
     query: Annotated[
@@ -300,6 +310,14 @@ async def deep_research(
         str,
         "Name of a backend declared in the server's [backends] config table. Leave empty for the default backend. Use list_backends to see what is available.",
     ] = "",
+    title: Annotated[
+        str,
+        "Short title for the research record saved in the stations Directus. Leave empty to use the start of the query.",
+    ] = "",
+    project: Annotated[
+        str,
+        "Optional Project CMS ID or name this research belongs to; stored on the Directus record.",
+    ] = "",
     ctx: Context | None = None,
 ) -> dict[str, Any]:
     """
@@ -324,10 +342,13 @@ async def deep_research(
 
     **Note:** Uses provider-native research backends - monitor costs as research can generate substantial tokens.
     """
+    record_id = await directus_log.start(
+        query, system_instructions, backend or DEFAULT_BACKEND_NAME, title, project
+    )
     try:
         agent = _ensure_research_agent(backend)
     except Exception as e:
-        return asdict(
+        return await _logged(record_id, 
             ResearchResult.error(message=f"Failed to initialize research agent: {e}")
         )
 
@@ -356,14 +377,14 @@ async def deep_research(
                 total=1,
                 message=f"Research failed: {result.message or 'Unknown error'}",
             )
-        return asdict(result)
+        return await _logged(record_id, result)
 
     except ResearchError as e:
         logger.error(f"Research error: {e}")
-        return asdict(ResearchResult.error(message=f"Research error: {e}"))
+        return await _logged(record_id, ResearchResult.error(message=f"Research error: {e}"))
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
-        return asdict(ResearchResult.error(message=f"Unexpected error: {e}"))
+        return await _logged(record_id, ResearchResult.error(message=f"Unexpected error: {e}"))
 
 
 @mcp.tool(meta=RESEARCH_TOOL_META, structured_output=True)
