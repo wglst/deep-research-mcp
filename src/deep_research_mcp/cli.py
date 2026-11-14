@@ -607,6 +607,7 @@ def build_parser() -> argparse.ArgumentParser:
         choices=[
             "openai",
             "openai-codex",
+            "claude-code",
             "dr-tulu",
             "gemini",
             "tavily",

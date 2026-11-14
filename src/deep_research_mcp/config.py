@@ -60,6 +60,12 @@ _PROVIDER_DEFAULTS: dict[str, tuple[str, str, tuple[str, ...], tuple[str, ...]]]
         (),
         (),
     ),
+    "claude-code": (
+        "auto",
+        "",
+        (),
+        (),
+    ),
 }
 
 # Name of the backend described by the [research] table (and RESEARCH_* env vars).
@@ -300,9 +306,9 @@ class ResearchConfig:
             default_model = "gpt-6-luna"
         api_key: str | None
         base_url: str | None
-        if provider == "openai-codex":
+        if provider in {"openai-codex", "claude-code"}:
             api_key = None
-            base_url = default_base_url
+            base_url = default_base_url or None
         else:
             if provider == "tavily":
                 api_key = get_setting_first(*api_key_keys, "RESEARCH_API_KEY")

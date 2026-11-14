@@ -10,6 +10,7 @@ from deep_research_mcp.config import ResearchConfig
 from deep_research_mcp.errors import ConfigurationError
 
 from .base import ResearchBackend
+from .claude_code_backend import ClaudeCodeResearchBackend
 from .codex_backend import CodexResearchBackend
 from .dr_tulu_backend import DrTuluResearchBackend
 from .gemini_backend import GeminiResearchBackend
@@ -20,6 +21,7 @@ from .tavily_backend import TavilyResearchBackend
 _BACKENDS: dict[str, type[ResearchBackend]] = {
     "openai": OpenAIResearchBackend,
     "openai-codex": CodexResearchBackend,
+    "claude-code": ClaudeCodeResearchBackend,
     "dr-tulu": DrTuluResearchBackend,
     "gemini": GeminiResearchBackend,
     "tavily": TavilyResearchBackend,
@@ -41,6 +43,7 @@ __all__ = [
     "ResearchBackend",
     "OpenAIResearchBackend",
     "CodexResearchBackend",
+    "ClaudeCodeResearchBackend",
     "DrTuluResearchBackend",
     "GeminiResearchBackend",
     "TavilyResearchBackend",

@@ -448,6 +448,12 @@ def list_backends() -> BackendListResult:
         )
         if config.provider == "openai-codex":
             backend.oauth_present = DEFAULT_CODEX_AUTH_PATH.exists()
+        elif config.provider == "claude-code":
+            from deep_research_mcp.backends.claude_code_backend import (
+                CLAUDE_CREDENTIALS_PATH,
+            )
+
+            backend.oauth_present = CLAUDE_CREDENTIALS_PATH.exists()
         else:
             backend.api_key_present = bool(config.api_key)
         if config.provider == "gnosis":
