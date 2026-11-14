@@ -1,0 +1,17 @@
+[Unit]
+Description=Research Station queue watcher (Directus research -> research station)
+After=stations-directus.service network-online.target
+Wants=stations-directus.service
+
+[Service]
+User=sandbox
+WorkingDirectory=/home/sandbox/stations/research-queue
+Environment=HOME=/home/sandbox
+Environment=PATH=/home/sandbox/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/sandbox/stations/research/.venv/bin/python /home/sandbox/stations/research-queue/watcher.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

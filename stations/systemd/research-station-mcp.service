@@ -1,0 +1,17 @@
+[Unit]
+Description=Research Station MCP (HTTP on Tailscale)
+After=network-online.target tailscaled.service
+Wants=network-online.target tailscaled.service
+
+[Service]
+User=sandbox
+WorkingDirectory=/home/sandbox/stations/research
+Environment=HOME=/home/sandbox
+Environment=PATH=/home/sandbox/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/sandbox/stations/research/.venv/bin/deep-research-mcp --transport http --host 100.69.92.42 --port 8080
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

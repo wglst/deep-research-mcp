@@ -1,0 +1,12 @@
+services:
+  directus:
+    image: directus/directus:12.6.1@sha256:e1561b5e526e8e7a2ac19b7bb6eab63611dd84a862a8c45b864118768a2baff4
+    container_name: stations-directus
+    restart: unless-stopped
+    ports:
+      - "100.69.92.42:8055:8055"
+    volumes:
+      - ./database:/directus/database
+      - ./uploads:/directus/uploads
+      - ./extensions:/directus/extensions
+    env_file: .env
