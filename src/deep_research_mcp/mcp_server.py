@@ -41,6 +41,7 @@ https://cookbook.openai.com/examples/deep_research_api/introduction_to_deep_rese
 """
 
 import argparse
+import os
 import asyncio
 import logging
 from contextlib import suppress
@@ -96,6 +97,13 @@ RESEARCH_TOOL_META = {"anthropic/maxResultSizeChars": 500_000}
 
 # Initialize FastMCP server at module level with metadata
 token_verifier, auth_settings = load_http_auth()
+# Optional single-user PIN OAuth (ported from wglst/air-mcp) for a public tunnel instance.
+_pin_provider = None
+if os.environ.get("RESEARCH_PIN_PUBLIC_URL"):
+    from deep_research_mcp.pin_auth import build_pin_auth
+
+    _pin_provider, auth_settings = build_pin_auth(os.environ["RESEARCH_PIN_PUBLIC_URL"])
+    token_verifier = None
 mcp = FastMCP(
     name=f"deep-research (v{__version__})",
     instructions=(
@@ -113,8 +121,12 @@ mcp = FastMCP(
     debug=False,
     log_level="INFO",
     token_verifier=token_verifier,
+    auth_server_provider=_pin_provider,
     auth=auth_settings,
 )
+if _pin_provider is not None:
+    mcp.custom_route("/oauth/login", methods=["GET"])(_pin_provider.login_get)
+    mcp.custom_route("/oauth/login", methods=["POST"])(_pin_provider.login_post)
 
 
 def _apply_logging_config(log_level: str) -> None:
@@ -539,9 +551,7 @@ def main():
 
     # Keep DNS-rebinding protection, but also allow the address actually bound
     # (e.g. a Tailscale IP) plus extra hosts listed in MCP_ALLOWED_HOSTS.
-    if args.host not in ("127.0.0.1", "localhost", "::1"):
-        import os
-
+    if args.host not in ("127.0.0.1", "localhost", "::1") or os.environ.get("MCP_ALLOWED_HOSTS"):
         from mcp.server.transport_security import TransportSecuritySettings
 
         hosts = ["127.0.0.1:*", "localhost:*", "[::1]:*", f"{args.host}:*"]
@@ -560,7 +570,17 @@ def main():
     # Run the MCP server with selected transport
     if args.transport == "http":
         logger.info(f"Starting HTTP (streaming) server on {args.host}:{args.port}")
-        mcp.run(transport="streamable-http")
+        if _pin_provider is not None:
+            import uvicorn
+            from starlette.routing import Route
+
+            app = mcp.streamable_http_app()
+            prm = next((r for r in app.routes if getattr(r, "path", None) == "/.well-known/oauth-protected-resource/mcp"), None)
+            if prm is not None:
+                app.router.routes.append(Route("/.well-known/oauth-protected-resource", endpoint=prm.endpoint, methods=list(prm.methods)))
+            uvicorn.run(app, host=args.host, port=args.port, proxy_headers=True, forwarded_allow_ips="127.0.0.1")
+        else:
+            mcp.run(transport="streamable-http")
     else:
         logger.info("Starting stdio server")
         mcp.run()
